@@ -13,5 +13,23 @@ faxina, gerenciar os horários e a disponibilidade, e registrar interações ent
 ---
 
 
-## ENTREGA 2 - 
+## ENTREGA 2 - Diagrama entidade relacionamento (DER) 
+
+
+Arquivo DER contém o diagrama
+
+
+## ENTREGA 3 - Script de criação e população do banco de dados  
+
+todo script do banco incluindo os registros estão no arquivo schema.sql
+
+
+
+
+
+
+
+
+
+
 
