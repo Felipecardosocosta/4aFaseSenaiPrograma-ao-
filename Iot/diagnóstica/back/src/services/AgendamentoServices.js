@@ -49,6 +49,13 @@ function normalizarEValidarDados(dados) {
 }
 
 class AgendamentoServices {
+    async verificarDisponibilidade(dados, ignorarAgendamentoId = null) {
+        const normalizados = normalizarEValidarDados(dados);
+        const agendamento = { ...dados, ...normalizados };
+        await this.validarRelacionamentosEHorario(agendamento, ignorarAgendamentoId);
+        return { disponivel: true };
+    }
+
     async validarRelacionamentosEHorario(dados, ignorarAgendamentoId = null) {
         const [cliente, profissional] = await Promise.all([
             agendamentoRepository.buscarClientePorId(dados.clienteId),

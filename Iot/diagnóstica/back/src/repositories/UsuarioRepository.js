@@ -23,7 +23,12 @@ class UsuarioRepository{
 
     async cadastrarUsuario({nome,email,cpf,senha}){
 
-        return await pool.query("INSERT INTO usuario(nome,email,cpf,senha) VALUES($1$2$3$4) RETURNING *",[nome,email,cpf,senha])
+        return pool.query(
+            `INSERT INTO usuario (nome, email, cpf, senha)
+             VALUES ($1, $2, $3, $4)
+             RETURNING id, nome, email, cpf, status_user, tipo`,
+            [nome, email, cpf, senha]
+        )
     }
 
     async mudarPermissaoUsuario({id,permissao}){

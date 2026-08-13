@@ -4,6 +4,8 @@ const consultaComRelacionamentos = `
     SELECT
         a.*,
         c.nome AS cliente_nome,
+        c.rua AS cliente_rua,
+        c.numero AS cliente_numero,
         p.nome AS profissional_nome
     FROM agendamento a
     INNER JOIN cliente c ON c.id = a.cliente_id

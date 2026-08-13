@@ -24,16 +24,35 @@ function responderErro(error, res) {
 }
 
 class ProfissionalController {
+    async listar(req, res) {
+        try {
+            const resultado = await profissionalServices.listar();
+            return res.status(200).json(resultado.rows);
+        } catch (error) {
+            return res.status(500).json({ message: "Erro interno no servidor" });
+        }
+    }
+
     async cadastrar(req, res) {
-        const { nome, email, cpf, senha, tipo } = req.body;
+        const { nome, email, cpf, senha, tipo, disponibilidades = [] } = req.body;
 
         if (possuiCampoVazio([nome, email, cpf, senha, tipo])) {
             return res.status(422).json({ message: "Preencha todos os campos obrigatórios" });
         }
 
         try {
-            await profissionalServices.cadastro({ nome, email, cpf, senha, tipo });
-            return res.status(201).json({ message: "Profissional cadastrado com sucesso" });
+            const resultado = await profissionalServices.cadastro({
+                nome,
+                email,
+                cpf,
+                senha,
+                tipo,
+                disponibilidades
+            });
+            return res.status(201).json({
+                message: "Profissional cadastrado com sucesso",
+                profissional: resultado.rows[0]
+            });
         } catch (error) {
             return responderErro(error, res);
         }

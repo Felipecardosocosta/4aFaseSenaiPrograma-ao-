@@ -39,6 +39,33 @@ function responderErro(error, res) {
 }
 
 class AgendamentoController {
+    async verificarDisponibilidade(req, res) {
+        const dados = extrairDados(req.body);
+        const obrigatorios = [
+            dados.clienteId,
+            dados.profissionalId,
+            dados.dataAgendamento,
+            dados.horaInicio,
+            dados.horaFim,
+            dados.ambiente,
+            dados.tipoFaxina
+        ];
+
+        if (possuiCampoVazio(obrigatorios)) {
+            return res.status(422).json({ message: "Preencha os dados do agendamento" });
+        }
+
+        try {
+            await agendamentoServices.verificarDisponibilidade(
+                dados,
+                req.body.ignorar_agendamento_id ?? null
+            );
+            return res.status(200).json({ disponivel: true, message: "Horário disponível" });
+        } catch (error) {
+            return responderErro(error, res);
+        }
+    }
+
     async cadastrar(req, res) {
         const dados = extrairDados(req.body);
         const obrigatorios = [

@@ -30,17 +30,61 @@ function validarHorarios(horaInicio, horaFim) {
 }
 
 class ProfissionalServices {
-    async cadastro({ nome, email, cpf, senha, tipo }) {
+    async listar() {
+        return profissionalRepository.listarProfissionais();
+    }
+
+    async cadastro({ nome, email, cpf, senha, tipo, disponibilidades = [] }) {
+        const nomeNormalizado = String(nome).trim();
+        const emailNormalizado = String(email).trim().toLowerCase();
+        const cpfNormalizado = String(cpf).replace(/\D/g, "");
         const tipoNormalizado = String(tipo).toUpperCase();
         const tiposAceitos = ["PESADA", "MEDIA", "LEVE", "TODOS"];
+
+        if (nomeNormalizado.length < 3) {
+            throw new ProfissionalServiceError("Nome inválido", "DADOS_INVALIDOS");
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
+            throw new ProfissionalServiceError("E-mail inválido", "DADOS_INVALIDOS");
+        }
+
+        if (!/^\d{11}$/.test(cpfNormalizado)) {
+            throw new ProfissionalServiceError("CPF inválido", "DADOS_INVALIDOS");
+        }
+
+        if (String(senha).length < 8) {
+            throw new ProfissionalServiceError(
+                "A senha deve possuir pelo menos 8 caracteres",
+                "DADOS_INVALIDOS"
+            );
+        }
 
         if (!tiposAceitos.includes(tipoNormalizado)) {
             throw new ProfissionalServiceError("Tipo de faxina inválido", "DADOS_INVALIDOS");
         }
 
+        if (!Array.isArray(disponibilidades)) {
+            throw new ProfissionalServiceError("Disponibilidades inválidas", "DADOS_INVALIDOS");
+        }
+
+        const disponibilidadesNormalizadas = disponibilidades.map((periodo) => {
+            const hoje = new Date().toISOString().slice(0, 10);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(periodo?.data_disponivel || "") || periodo.data_disponivel < hoje) {
+                throw new ProfissionalServiceError("Informe a data da disponibilidade", "DADOS_INVALIDOS");
+            }
+            validarHorarios(periodo.hora_inicio, periodo.hora_fim);
+            return {
+                dataDisponivel: periodo.data_disponivel,
+                horaInicio: periodo.hora_inicio,
+                horaFim: periodo.hora_fim,
+                disponivel: periodo.disponivel !== false
+            };
+        });
+
         const [profissionalPorEmail, profissionalPorCpf] = await Promise.all([
-            profissionalRepository.buscarProfissionalPorEmail(email),
-            profissionalRepository.buscarProfissionalPorCpf(cpf)
+            profissionalRepository.buscarProfissionalPorEmail(emailNormalizado),
+            profissionalRepository.buscarProfissionalPorCpf(cpfNormalizado)
         ]);
 
         if (profissionalPorEmail.rows.length > 0 || profissionalPorCpf.rows.length > 0) {
@@ -53,18 +97,33 @@ class ProfissionalServices {
         const senhaHash = await createHash(senha);
 
         try {
-            return await profissionalRepository.cadastrarProfissional({
-                nome,
-                email,
-                cpf,
+            return await profissionalRepository.cadastrarProfissionalComDisponibilidades({
+                nome: nomeNormalizado,
+                email: emailNormalizado,
+                cpf: cpfNormalizado,
                 senha: senhaHash,
-                tipo: tipoNormalizado
+                tipo: tipoNormalizado,
+                disponibilidades: disponibilidadesNormalizadas
             });
         } catch (error) {
             if (error.code === "23505") {
                 throw new ProfissionalServiceError(
                     "CPF ou email já cadastrado",
                     "PROFISSIONAL_DUPLICADO"
+                );
+            }
+
+            if (error.code === "23P01") {
+                throw new ProfissionalServiceError(
+                    "Existem períodos de disponibilidade sobrepostos",
+                    "DADOS_INVALIDOS"
+                );
+            }
+
+            if (error.code === "23514") {
+                throw new ProfissionalServiceError(
+                    "Período de disponibilidade inválido",
+                    "DADOS_INVALIDOS"
                 );
             }
 

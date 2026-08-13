@@ -1,6 +1,10 @@
 import { pool } from "../config/db.js";
 
 class ClienteRepository {
+    async listarClientes() {
+        return pool.query("SELECT id, nome, cpf, email, cep, rua, numero, tipo FROM cliente ORDER BY nome");
+    }
+
     async buscarClientePorEmail(email) {
         return pool.query("SELECT * FROM cliente WHERE email = $1", [email]);
     }

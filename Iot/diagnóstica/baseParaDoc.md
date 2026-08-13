@@ -24,6 +24,28 @@ Arquivo DER contém o diagrama
 todo script do banco incluindo os registros estão no arquivo schema.sql
 
 
+## ENTREGA 9 - Lista de requisitos de infraestrutura
+
+Para o desenvolvimento e a execução do sistema CleanCare, foram utilizados os seguintes recursos de infraestrutura:
+
+| Item | Tecnologia | Versão utilizada | Finalidade no sistema |
+|------|------------|------------------|----------------------|
+| 9.1.1 | PostgreSQL | 18.3 | Sistema Gerenciador de Banco de Dados (SGBD) responsável pela persistência de usuários, clientes, profissionais, disponibilidades e agendamentos. |
+| 9.1.2 | JavaScript | ECMAScript 2024, executado no Node.js 22.18.0 | Linguagem utilizada no frontend React e no backend Node.js/Express. |
+
+
+### Requisitos complementares
+
+- Node.js 22.18.0 para execução do backend e das ferramentas do frontend.
+- npm 10.9.3 para instalação e gerenciamento das dependências.
+- Driver `pg` 8.23.0 para comunicação entre o backend e o PostgreSQL.
+- PostgreSQL com suporte à função `gen_random_uuid()`, utilizada na geração de identificadores UUID.
+
+As versões do PostgreSQL, Node.js e npm foram verificadas diretamente no ambiente de desenvolvimento.
+
+
+
+
 
 
 

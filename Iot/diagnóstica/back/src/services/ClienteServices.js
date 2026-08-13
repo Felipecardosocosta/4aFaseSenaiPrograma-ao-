@@ -9,6 +9,10 @@ export class ClienteServiceError extends Error {
 }
 
 class ClienteServices {
+    async listar() {
+        return clienteRepository.listarClientes();
+    }
+
     async cadastro({ nome, cpf, email, cep, rua, numero, tipo }) {
         const tipoNormalizado = String(tipo).toUpperCase();
         const tiposAceitos = ["PESADA", "MEDIA", "LEVE", "TODOS"];

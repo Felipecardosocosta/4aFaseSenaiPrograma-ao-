@@ -5,6 +5,7 @@ import usuarioRouter from "./routes/UsuarioRoutes.js";
 import clienteRouter from "./routes/ClienteRoutes.js";
 import profissionalRouter from "./routes/ProfissionalRoutes.js";
 import agendamentoRouter from "./routes/AgendamentoRoutes.js";
+import dashboardRouter from "./routes/DashboardRoutes.js";
 import { authToken } from "./middleware/authToken.js";
 
 
@@ -26,6 +27,7 @@ app.use('/usuario', usuarioRouter)
 app.use('/cliente', authToken, clienteRouter)
 app.use('/profissional', authToken, profissionalRouter)
 app.use('/agendamento', authToken, agendamentoRouter)
+app.use('/dashboard', authToken, dashboardRouter)
 
 
 

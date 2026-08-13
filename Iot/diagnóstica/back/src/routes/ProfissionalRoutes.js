@@ -3,6 +3,7 @@ import { profissionalController } from "../controller/ProfissionalController.js"
 
 const profissionalRouter = Router();
 
+profissionalRouter.get("/", profissionalController.listar);
 profissionalRouter.post("/cadastro", profissionalController.cadastrar);
 profissionalRouter.post(
     "/:profissionalId/disponibilidade",

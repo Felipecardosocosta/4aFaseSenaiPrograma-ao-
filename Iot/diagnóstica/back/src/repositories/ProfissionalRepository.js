@@ -1,6 +1,10 @@
 import { pool } from "../config/db.js";
 
 class ProfissionalRepository {
+    async listarProfissionais() {
+        return pool.query("SELECT id, nome, email, cpf, tipo FROM profissional ORDER BY nome");
+    }
+
     async buscarProfissionalPorId(id) {
         return pool.query("SELECT * FROM profissional WHERE id = $1", [id]);
     }
@@ -17,9 +21,53 @@ class ProfissionalRepository {
         return pool.query(
             `INSERT INTO profissional (nome, email, cpf, senha, tipo)
              VALUES ($1, $2, $3, $4, $5)
-             RETURNING *`,
+             RETURNING id, nome, email, cpf, tipo`,
             [nome, email, cpf, senha, tipo]
         );
+    }
+
+    async cadastrarProfissionalComDisponibilidades({
+        nome,
+        email,
+        cpf,
+        senha,
+        tipo,
+        disponibilidades
+    }) {
+        const cliente = await pool.connect();
+
+        try {
+            await cliente.query("BEGIN");
+            const profissional = await cliente.query(
+                `INSERT INTO profissional (nome, email, cpf, senha, tipo)
+                 VALUES ($1, $2, $3, $4, $5)
+                 RETURNING id, nome, email, cpf, tipo`,
+                [nome, email, cpf, senha, tipo]
+            );
+
+            for (const periodo of disponibilidades) {
+                await cliente.query(
+                    `INSERT INTO disponibilidade_profissional
+                        (profissional_id, data_disponivel, hora_inicio, hora_fim, disponivel)
+                     VALUES ($1, $2, $3, $4, $5)`,
+                    [
+                        profissional.rows[0].id,
+                        periodo.dataDisponivel,
+                        periodo.horaInicio,
+                        periodo.horaFim,
+                        periodo.disponivel
+                    ]
+                );
+            }
+
+            await cliente.query("COMMIT");
+            return profissional;
+        } catch (error) {
+            await cliente.query("ROLLBACK");
+            throw error;
+        } finally {
+            cliente.release();
+        }
     }
 
     async buscarDisponibilidadePorId(id) {
